@@ -1,0 +1,30 @@
+# resume-as-code publish pipeline.
+# Render: d2 docs/pipeline.d2 docs/pipeline.svg
+
+direction: right
+style.fill: "#1f1f28"
+
+classes: {
+  node: { style: { fill: "#2a2a37"; stroke: "#54546d"; font-color: "#dcd7ba"; border-radius: 6 } }
+  group: { style: { fill: "#16161d"; stroke: "#4d699b"; font-color: "#7e9cd8"; font-size: 16 } }
+  io: { style: { fill: "#223249"; stroke: "#7e9cd8"; font-color: "#c8c093"; border-radius: 6 } }
+}
+
+edit: "Edit resume.typ" { shape: document; class: node }
+push: "git push to main" { shape: hexagon; class: node }
+
+ci: "GitHub Actions" {
+  class: group
+  tag: "Bump version tag" { class: node }
+  compile: "Compile with Typst" { class: node }
+  attach: "Attach PDF" { class: node }
+  tag -> compile -> attach
+}
+
+release: "GitHub Release\ncv.pdf" { shape: page; class: io }
+
+edit -> push -> ci.tag
+ci.attach -> release
+
+(* -> *)[*].style.stroke: "#4d699b"
+(* -> *)[*].style.stroke-width: 2

@@ -9,6 +9,8 @@ The point of this repo is the **pipeline**, not the design. The sample resume is
 deliberately plain. Swap in your own layout; the build, versioning, and publish
 flow stay the same.
 
+![Pipeline: edit resume.typ, push to main, then GitHub Actions bumps a version tag, compiles with Typst, and attaches the PDF to a GitHub Release.](docs/pipeline.svg)
+
 ## What you get
 
 - **One source file** (`resume/resume.typ`) you edit in any text editor.
