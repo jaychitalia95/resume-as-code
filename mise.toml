@@ -1,0 +1,4 @@
+# Pin the Typst version so local builds match CI.
+# Install with: mise install   (https://mise.jdx.dev)
+[tools]
+typst = "0.14.2"

@@ -1,0 +1,62 @@
+name: Build & publish resume
+
+# Every push to main that touches the resume bumps a version tag, compiles the
+# PDF with Typst, and attaches it to a GitHub Release. No secrets required.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'resume/resume.typ'
+      - '.github/workflows/resume.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write  # push the new tag + attach the PDF to a release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history + tags so the version bump can see them
+
+      - name: Bump version tag
+        id: tag
+        uses: anothrNick/github-tag-action@4ed44965e0db8dab2b466a16da04aec3cc312fd8 # 1.75.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch          # put #minor or #major in a commit message to change the level
+          WITH_V: 'true'
+          RELEASE_BRANCHES: main
+
+      - name: Set up Typst
+        uses: typst-community/setup-typst@v5
+        with:
+          version: '0.14.2'
+
+      # Libertinus Serif + New Computer Modern ship inside Typst, so no font install.
+      - name: Compile resume
+        run: typst compile resume/resume.typ cv.pdf --input "version=${{ steps.tag.outputs.new_tag }}"
+
+      - name: Attach PDF to a GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.new_tag }}
+          name: ${{ steps.tag.outputs.new_tag }}
+          files: cv.pdf
+
+  # ── Optional: host the latest PDF at a stable URL ───────────────────────────
+  # GitHub Releases give you a versioned archive but the download URL changes per
+  # tag. If you want one permanent "latest" link (e.g. to put on a website), push
+  # to object storage too. Example for Cloudflare R2 — add the secrets, then
+  # uncomment. Any S3-compatible bucket works the same way.
+  #
+  #     - name: Publish latest to R2
+  #       uses: cloudflare/wrangler-action@v4
+  #       with:
+  #         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  #         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  #         command: >-
+  #           r2 object put my-bucket/resume/cv.pdf --file=cv.pdf
+  #           --content-type=application/pdf --cache-control="public, max-age=300" --remote

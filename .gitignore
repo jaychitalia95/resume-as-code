@@ -1,0 +1,2 @@
+# Compiled output. CI builds it and publishes it to Releases; don't commit it.
+*.pdf
