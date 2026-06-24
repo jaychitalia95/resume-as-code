@@ -33,7 +33,7 @@ jobs:
       - name: Set up Typst
         uses: typst-community/setup-typst@v5
         with:
-          version: '0.14.2'
+          typst-version: '0.14.2'
 
       # Libertinus Serif + New Computer Modern ship inside Typst, so no font install.
       - name: Compile resume
